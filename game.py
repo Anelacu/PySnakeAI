@@ -2,50 +2,43 @@ import pygame
 import random
 import sys
 
-PURPLE = (255, 0, 255)
-RED = (255, 0, 0)
-BLACK = (0, 0, 0)
-size = 500
-
-# Set screen size and init pygame
-screen = pygame.display.set_mode([size, size])
-pygame.init()
-font_name = pygame.font.match_font('arial')
-
 
 # Segment is a block of the Snake
 # The snake is constructed of these segments
 class Segment:
-    def __init__(self, x, y, colour, width=10):
+    def __init__(self, screen, x, y, colour, width=10):
         self.x, self.y = x, y
         self.colour = colour
         self.width = width
+        self.screen = screen
 
 # Draw the segment at the specified coordinates
 # Segments are squares with dimensions of width*width
     def segment_draw(self):
-        pygame.draw.rect(screen, self.colour, (self.x, self.y, self.width,
+        pygame.draw.rect(self.screen, self.colour, (self.x, self.y, self.width,
                                                self.width), 0)
 
 
 # Food is the objective that snake is meant to reach
 # Food will cause the snake to grow and score to increase
 class Food:
-    def __init__(self, x=0, y=0, colour=RED, width=10):
+    def __init__(self, colours, screen, size, x=0, y=0, width=10):
         self.x, self.y = x, y
-        self.colour = colour
+        self.colour = colours['RED']
         self.width = width
+        self.screen = screen
+        self.size = size
 
 # Draw the food at the specified coordinates
 # Food is a square of width*width dimension
     def food_draw(self):
-        pygame.draw.rect(screen, self.colour, (self.x, self.y,
+        pygame.draw.rect(self.screen, self.colour, (self.x, self.y,
                                                self.width, self.width), 0)
 
 # Update coordinates after the food has been eaten
     def food_new(self):
-        self.x = random.choice(range(10, size, self.width))
-        self.y = random.choice(range(10, size, self.width))
+        self.x = random.choice(range(10, self.size, self.width))
+        self.y = random.choice(range(10, self.size, self.width))
 
 
 # Snake class
@@ -54,16 +47,17 @@ class Food:
 # xVel and yVel are velocities used to determine snake movement
 # direction is a label of the current direction of the snake
 class Snake:
-    def __init__(self, colour, length=5, size=500):
+    def __init__(self, colour, screen, length=5, size=500):
         self.colour = colour
         self.initial_length = length
         self.length = length
+        self.screen = screen
         self.segments = []
         self.x, self.y = size//2, size//2
         self.xVel, self.yVel = -10, 0
         self.direction = 'LEFT'
         for i in range(length):
-            self.segments.append(Segment(self.x, self.y, colour))
+            self.segments.append(Segment(self.screen, self.x, self.y, self.colour))
             self.x += self.segments[i].width
 
 # Function to create the snake
@@ -77,7 +71,7 @@ class Snake:
     def snake_move(self):
         self.x += self.xVel
         self.y += self.yVel
-        self.segments.insert(0, Segment(self.x, self.y, self.colour))
+        self.segments.insert(0, Segment(self.screen, self.x, self.y, self.colour))
         self.segments.pop()
 
 # Function to add a new segment to the snake
@@ -85,7 +79,7 @@ class Snake:
     def snake_grow(self):
         self.x += self.xVel
         self.y += self.yVel
-        self.segments.insert(0, Segment(self.x, self.y, self.colour))
+        self.segments.insert(0, Segment(self.screen, self.x, self.y, self.colour))
 
 
 # Function to check for snake's collisions with other elements
@@ -113,30 +107,30 @@ def check_collisions(snake, food, size=500):
 
 
 # Utility function to display text on the screen
-def draw_text(surf, text, size, x, y):
+def draw_text(surf, text, size, x, y, font_name, colours):
     font = pygame.font.Font(font_name, size)
-    text_surface = font.render(text, True, PURPLE)
+    text_surface = font.render(text, True, colours['PURPLE'])
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
 
 
 # Utility function to redraw the window
-def update_window(screen, snake, food):
-    screen.fill(BLACK)
+def update_window(screen, snake, food, colours, font_name):
+    screen.fill(colours['BLACK'])
     food.food_draw()
     snake.snake_draw()
     # The score = delta length
-    draw_text(screen, str(snake.length-snake.initial_length), 30, 250, 10)
+    draw_text(screen, str(snake.length-snake.initial_length), 30, 250, 10, font_name, colours)
     pygame.display.update()
 
 
 # The start screen
 # If key pressed, start screen loop terminates and game loop begins
-def start_screen(screen):
+def start_screen(screen, font_name, colours):
     terminate = False
     while not terminate:
-        draw_text(screen, 'Press any key to play!', 40, 250, 150)
+        draw_text(screen, 'Press any key to play!', 40, 250, 150, font_name, colours)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -150,12 +144,12 @@ def start_screen(screen):
 # The game over screen
 # Displayed when game is lost
 # Allows user to play the game again
-def game_over_screen(screen, snake):
-    screen.fill(BLACK)
-    draw_text(screen, "Game over :(", 40, 250, 100)
+def game_over_screen(screen, snake, colours, font_name):
+    screen.fill(colours['BLACK'])
+    draw_text(screen, "Game over :(", 40, 250, 100, font_name, colours)
     draw_text(screen, "Total score of "+str(
-                    snake.length-snake.initial_length), 40, 250, 150)
-    draw_text(screen, 'Press any key to play again!', 40, 250, 200)
+                    snake.length-snake.initial_length), 40, 250, 150, font_name, colours)
+    draw_text(screen, 'Press any key to play again!', 40, 250, 200, font_name, colours)
     pygame.display.update()
     terminate = False
     while not terminate:
@@ -173,17 +167,23 @@ def game_over_screen(screen, snake):
 # Utility function for initialising game objects
 # Starts the game loop
 def game_init():
-    start_screen(screen)
+    colours = {"PURPLE":(255, 0, 255), "RED": (255, 0, 0), "BLACK": (0, 0, 0)}
+    font_name = pygame.font.match_font('arial')
+    size = 500
+    # Set screen size and init pygame
+    screen = pygame.display.set_mode([size, size])
+    pygame.init()
+    start_screen(screen, font_name, colours)
     clock = pygame.time.Clock()
-    food = Food()
+    food = Food(colours, screen, size)
     food.food_new()
     food.food_draw()
-    snake = Snake(PURPLE)
-    game_loop(clock, food, snake)
+    snake = Snake(colours["PURPLE"], screen)
+    game_loop(clock, food, snake, screen, size, colours, font_name)
 
 
 # Game loop
-def game_loop(clock, food, snake):
+def game_loop(clock, food, snake, screen, size, colours, font_name):
     while True:
         # Get key press
         # Give ability to quit using the x in the window corner
@@ -220,9 +220,9 @@ def game_loop(clock, food, snake):
 
         snake.snake_move()
         if check_collisions(snake, food, size):
-            game_over_screen(screen, snake)
+            game_over_screen(screen, snake, colours, font_name)
         else:
-            update_window(screen, snake, food)
+            update_window(screen, snake, food, colours, font_name)
         clock.tick(10)
 
 

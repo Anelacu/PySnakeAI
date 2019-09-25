@@ -9,6 +9,7 @@ avail_actions = ['up', 'down', 'left', 'right']
 learning_rate = 0.85
 discount_factor = 0.9
 random_rate = 0.05
+iterations = 1000
 
 
 # Function which will return a tuple representing the state
@@ -53,3 +54,32 @@ def q_table_update(state0, state1, reward, action):
     q1 = q_table_lookup(state1)
     new_val = reward + discount_factor * select_action(q1) - q0[action]
     q_table[state0][action] = q0[action] + learning_rate * new_val
+
+
+# Function used to fetch the reward value
+# game.reward is calculated in game class based on collisions
+# if its not 0 it means that some collision state occured so we return reward
+# if no value is set then we return -0.1 as a base negative
+def get_reward(game):
+    if game.reward != 0:
+        return game.reward
+    else:
+        return -0.1
+
+# -------- To Dos -------------
+# temp comments
+# basic structure of process:
+# start game loop
+# get state of game loop
+# select action from q table
+# get reward
+# update state in q table
+# repeat
+
+# what needs doing:
+# 1) we dont actually need to see the screen, so all screen display can be removed
+# 2) snake needs to be wired to the algorithm
+# 3) need to understand where to init game loop, snake, etc in algorithm
+# 4) create some sort of log (maybe txt file) with which we can save q-tables
+# 5) and other things to keep track of
+# 6) wire everything and test run it

@@ -1,4 +1,3 @@
-
 from numpy import subtract
 import operator
 import random
@@ -20,7 +19,7 @@ def select_state(snake, food):
     food_pos = (food.x, food.y)
     tail_rel = tuple(subtract(tail_pos, head_pos))
     food_rel = tuple(subtract(food_pos, head_pos))
-    return (food_rel, tail_rel)
+    return food_rel, tail_rel
 
 
 # Function to return the state and its action values

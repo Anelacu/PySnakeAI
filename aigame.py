@@ -36,7 +36,6 @@ class Snake:
         self.segments = []
         self.x, self.y = size//2, size//2
         self.xVel, self.yVel = -10, 0
-        self.direction = 'LEFT'
         for i in range(length):
             self.segments.append(Segment(self.screen, self.x, self.y, self.colour))
             self.x += self.segments[i].width
@@ -90,9 +89,9 @@ class AiLoop:
 
     # Initialise the loop and create all needed objects
     def loop_init(self):
-        food = Food(self.colours, self.screen, self.size)
+        food = Food(self.size)
         food.food_new()
-        snake = Snake(self.colours["PURPLE"], self.screen)
+        snake = Snake(size=self.size)
         self.game_loop(food, snake)
 
     def main_loop(self, clock, food, snake):
@@ -106,19 +105,15 @@ class AiLoop:
             state = select_state(snake,food)
             action = select_action(state)
             if action == 'up':
-                snake.direction = 'UP'
                 snake.yVel -= 10
                 snake.xVel = 0
             elif action == 'down':
-                snake.direction = 'DOWN'
                 snake.yVel += 10
                 snake.xVel = 0
             elif action == 'right':
-                snake.direction = 'RIGHT'
                 snake.xVel += 10
                 snake.yVel = 0
             elif action == 'left':
-                snake.direction = 'LEFT'
                 snake.xVel -= 10
                 snake.yVel = 0
             snake.snake_move()
@@ -126,7 +121,7 @@ class AiLoop:
             reward = AiLoop.reward
             state_updated = select_state(snake,food)
             q_table_update(state, state_updated, reward, action)
-            
+
             # -------- To Dos -------------
             # what needs doing:
             # 1) we dont actually need to see the screen, so all screen display can be removed (x)

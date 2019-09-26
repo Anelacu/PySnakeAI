@@ -90,7 +90,7 @@ class Game:
         self.font_name = pygame.font.match_font('arial')
         self.size = 500
         self.screen = pygame.display.set_mode([self.size, self.size])
-        self.reward = 0
+
 
     # Utility function to display text on the screen
     def draw_text(self, surf, text, fsize, x, y):
@@ -123,7 +123,6 @@ class Game:
         # Check collision with food
         if snake.x == food.x and snake.y == food.y:
             snake.snake_grow()
-            self.reward =1
             on_snake = True
             while on_snake:
                 food.food_new()
@@ -134,13 +133,11 @@ class Game:
                         on_snake = True
         # Check collision with borders
         elif snake.x > self.size or snake.x < 0 or snake.y > self.size or snake.y < 0:
-            self.reward = -1
             return True
         # Check collision with self
         else:
             for s in snake.segments[1:]:
                 if s.x == snake.x and s.y == snake.y:
-                    self.reward = -1
                     return True
 
     # Utility function to redraw the window
@@ -231,6 +228,6 @@ class Game:
                 self.update_window(snake, food)
             clock.tick(10)
 
-
-game1 = Game()
-game1.game_init()
+if __name__ == "__main__":
+    game1 = Game()
+    game1.game_init()

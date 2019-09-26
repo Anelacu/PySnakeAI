@@ -64,21 +64,3 @@ def get_reward(game):
         return game.reward
     else:
         return -0.1
-
-# -------- To Dos -------------
-# temp comments
-# basic structure of process:
-# start game loop
-# get state of game loop
-# select action from q table
-# get reward
-# update state in q table
-# repeat
-
-# what needs doing:
-# 1) we dont actually need to see the screen, so all screen display can be removed
-# 2) snake needs to be wired to the algorithm
-# 3) need to understand where to init game loop, snake, etc in algorithm
-# 4) create some sort of log (maybe txt file) with which we can save q-tables
-# 5) and other things to keep track of
-# 6) wire everything and test run it

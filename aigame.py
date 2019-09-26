@@ -95,15 +95,37 @@ class AiLoop:
 
     def main_loop(self, clock, food, snake):
         while True:
-            # -------- To Dos -------------
-            # basic structure of process:
             # start loop
             # get state of loop
             # select action from q table
             # get reward
             # update state in q table
             # repeat
-
+            state = select_state(snake,food)
+            action = select_action(state)
+            if action == 'up':
+                snake.direction = 'UP'
+                snake.yVel -= 10
+                snake.xVel = 0
+            elif action == 'down':
+                snake.direction = 'DOWN'
+                snake.yVel += 10
+                snake.xVel = 0
+            elif action == 'right':
+                snake.direction = 'RIGHT'
+                snake.xVel += 10
+                snake.yVel = 0
+            elif action == 'left':
+                snake.direction = 'LEFT'
+                snake.xVel -= 10
+                snake.yVel = 0
+            snake.snake_move()
+            self.check_collisions(snake, food)
+            reward = AiLoop.reward
+            state_updated = select_state(snake,food)
+            q_table_update(state, state_updated, reward, action)
+            
+            # -------- To Dos -------------
             # what needs doing:
             # 1) we dont actually need to see the screen, so all screen display can be removed (x)
             # 2) snake needs to be wired to the algorithm
@@ -111,6 +133,5 @@ class AiLoop:
             # 4) create some sort of log (maybe txt file) with which we can save q-tables
             # 5) and other things to keep track of
             # 6) wire everything and test run it
-            snake.snake_move()
             self.check_collisions(snake, food)
             clock.tick(10)

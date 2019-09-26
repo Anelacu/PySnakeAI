@@ -69,5 +69,5 @@ class AiLoop:
             # 5) and other things to keep track of
             # 6) wire everything and test run it
             snake.snake_move()
-            self.check_collisions(snake, food):
+            self.check_collisions(snake, food)
             clock.tick(10)

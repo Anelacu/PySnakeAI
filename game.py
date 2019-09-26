@@ -228,6 +228,6 @@ class Game:
                 self.update_window(snake, food)
             clock.tick(10)
 
-
-game1 = Game()
-game1.game_init()
+if __name__ == "__main__":
+    game1 = Game()
+    game1.game_init()

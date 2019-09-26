@@ -137,18 +137,20 @@ class AiLoop:
             state_updated = select_state(snake, food)
             q_table_update(self.q_table, state, state_updated, reward, action)
             self.check_collisions(snake, food)
-            with open('log.txt', 'a') as log:
-                line0 = '---------------------------------------------------'
-                line1 = 'Iteration # {} q table : {}'.format(i, self.q_table)
-                line2 = 'Collisions Stats:'
-                line3 = 'Self : {}'.format(self.self_collisions)
-                line4 = 'Food : {}'.format(self.food_collisions)
-                line5 = 'Borders: {}'.format(self.border_collisions)
-                line6 = '---------------------------------------------------'
-                log.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
-                                    line0, line1, line2, line3, line4, line5, line6))
+            if i % 100 == 0:
+                print('Percent loaded: {} %'.format(i*100//self.iterations))
+                with open('log.txt', 'a') as log:
+                    line0 = '---------------------------------------------------'
+                    line1 = 'Iteration # {} '.format(i)
+                    line2 = 'Collisions Stats:'
+                    line3 = 'Self : {}'.format(self.self_collisions)
+                    line4 = 'Food : {}'.format(self.food_collisions)
+                    line5 = 'Borders: {}'.format(self.border_collisions)
+                    line6 = '---------------------------------------------------'
+                    log.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
+                                        line0, line1, line2, line3, line4, line5, line6))
 
 
-iterations = 1000
+iterations = 10000
 ai = AiLoop(iterations)
 ai.loop_init()

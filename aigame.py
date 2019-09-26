@@ -37,7 +37,7 @@ class Snake:
         self.x, self.y = size//2, size//2
         self.xVel, self.yVel = -10, 0
         for i in range(length):
-            self.segments.append(Segment(self.screen, self.x, self.y, self.colour))
+            self.segments.append(Segment(self.x, self.y))
             self.x += self.segments[i].width
 
 # Function to move the snake
@@ -45,7 +45,7 @@ class Snake:
     def snake_move(self):
         self.x += self.xVel
         self.y += self.yVel
-        self.segments.insert(0, Segment(self.screen, self.x, self.y, self.colour))
+        self.segments.insert(0, Segment(self.x, self.y))
         self.segments.pop()
 
 # Function to add a new segment to the snake
@@ -53,21 +53,34 @@ class Snake:
     def snake_grow(self):
         self.x += self.xVel
         self.y += self.yVel
-        self.segments.insert(0, Segment(self.screen, self.x, self.y, self.colour))
+        self.segments.insert(0, Segment(self.x, self.y))
 
 
 # Reworked game loop to remove unneeded functionality for AI
+# Reworked game loop to remove unneeded functionality for AI
 class AiLoop:
-    def __init__(self):
+    def __init__(self,iterations=1000):
         self.size = 500
         self.reward = -0.1
+        self.iterations = iterations
+        self.food_collisions = 0
+        self.self_collisions = 0
+        self.border_collisions = 0
+        # Some variables that will be used for q learning
+        # For now numbers are just approximations
+        self.q_table = {}
+        self.avail_actions = ['up', 'down', 'left', 'right']
+        self.learning_rate = 0.85
+        self.discount_factor = 0.9
+        self.random_rate = 0.05
 
     # check collisions and assign rewards based on collisions
     def check_collisions(self, snake, food):
         # Check collision with food
         if snake.x == food.x and snake.y == food.y:
             snake.snake_grow()
-            reward = 1
+            self.reward = 1
+            self.food_collisions += 1
             on_snake = True
             while on_snake:
                 food.food_new()
@@ -78,13 +91,15 @@ class AiLoop:
                         on_snake = True
         # Check collision with borders
         elif snake.x > self.size or snake.x < 0 or snake.y > self.size or snake.y < 0:
-            reward = -1
+            self.reward = -1
+            self.border_collisions += 1
             return True
         # Check collision with self
         else:
             for s in snake.segments[1:]:
                 if s.x == snake.x and s.y == snake.y:
-                    reward = -1
+                    self.reward = -1
+                    self.self_collisions += 1
                     return True
 
     # Initialise the loop and create all needed objects
@@ -92,10 +107,11 @@ class AiLoop:
         food = Food(self.size)
         food.food_new()
         snake = Snake(size=self.size)
-        self.game_loop(food, snake)
+        self.main_loop(food, snake)
 
-    def main_loop(self, clock, food, snake):
-        while True:
+    def main_loop(self,food, snake):
+        i = 0
+        while i < iterations:
             # start loop
             # get state of loop
             # select action from q table
@@ -103,7 +119,7 @@ class AiLoop:
             # update state in q table
             # repeat
             state = select_state(snake,food)
-            action = select_action(state)
+            action = select_action(state,self.q_table)
             if action == 'up':
                 snake.yVel -= 10
                 snake.xVel = 0
@@ -118,17 +134,24 @@ class AiLoop:
                 snake.yVel = 0
             snake.snake_move()
             self.check_collisions(snake, food)
-            reward = AiLoop.reward
+            reward = self.reward
             state_updated = select_state(snake,food)
-            q_table_update(state, state_updated, reward, action)
-
-            # -------- To Dos -------------
-            # what needs doing:
-            # 1) we dont actually need to see the screen, so all screen display can be removed (x)
-            # 2) snake needs to be wired to the algorithm
-            # 3) need to understand where to init game loop, snake, etc in algorithm
-            # 4) create some sort of log (maybe txt file) with which we can save q-tables
-            # 5) and other things to keep track of
-            # 6) wire everything and test run it
+            q_table_update(self.q_table,state, state_updated, reward, action)
             self.check_collisions(snake, food)
-            clock.tick(10)
+            i += 1
+            with open('log.txt','w') as log:
+                line0 = '---------------------------------------------------'
+                line1 = 'Iteration # {} q table : {}'.format(i,q_table)
+                line2 = 'Collisions Stats:'
+                line3 = 'Self : {}'.format(self.self_collisions)
+                line4 = 'Food : {}'.format(self.food_collisions)
+                line5 = 'Borders: {}'.format(self.border_collisions)
+                line6 = '---------------------------------------------------'
+                log.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
+                                    line0,line1,line2,line3,line4,line5,line6))
+
+
+
+iterations = 1000
+ai = AiLoop(iterations)
+ai.loop_init()

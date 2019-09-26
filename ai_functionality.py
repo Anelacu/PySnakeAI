@@ -24,17 +24,18 @@ def select_state(snake, food):
 
 # Function to return the state and its action values
 # If state does not exist add it and set action values to 0
-def q_table_lookup(state):
-    if state in q_table.keys():
-        return q_table[state]
+def q_table_lookup(table,state):
+    if state in table.keys():
+        return table[state]
     else:
-        q_table[state] = {'up': 0, 'down': 0, 'left': 0, 'right': 0}
-        return q_table[state]
+        table[state] = {'up': 0, 'down': 0, 'left': 0, 'right': 0}
+        return table[state]
 
 
 # Function to select best action from a given state
 # If all state are 0 return random action
-def select_action(state):
+def select_action(state,table):
+    state = q_table_lookup(table,state)
     if all(value == 0 for value in state.values()):
         best = random.choice(list(state))
         return best
@@ -48,19 +49,8 @@ def select_action(state):
 # calculate learned value by adding reward to discount * predicted
 # subtract the old value
 # then update q table by old value + learning rate*new value
-def q_table_update(state0, state1, reward, action):
-    q0 = q_table_lookup(state0)
-    q1 = q_table_lookup(state1)
-    new_val = reward + discount_factor * select_action(q1) - q0[action]
-    q_table[state0][action] = q0[action] + learning_rate * new_val
-
-
-# Function used to fetch the reward value
-# game.reward is calculated in game class based on collisions
-# if its not 0 it means that some collision state occured so we return reward
-# if no value is set then we return -0.1 as a base negative
-def get_reward(game):
-    if game.reward != 0:
-        return game.reward
-    else:
-        return -0.1
+def q_table_update(table,state0, state1, reward, action):
+    q0 = q_table_lookup(table,state0)
+    q1 = q_table_lookup(table,state1)
+    new_val = reward + discount_factor * select_action(table,q1) - q0[action]
+    table[state0][action] = q0[action] + learning_rate * new_val

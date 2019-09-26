@@ -3,9 +3,7 @@ import operator
 import random
 # Some variables that will be used for q learning
 # For now numbers are just approximations
-q_table = {}
-avail_actions = ['up', 'down', 'left', 'right']
-learning_rate = 0.85
+learning_rate = 0.5
 discount_factor = 0.9
 random_rate = 0.05
 
@@ -13,9 +11,12 @@ random_rate = 0.05
 # Function which will return a tuple representing the state
 # State = (relative coordinates food to head, relative coordinates tail to head)
 def select_state(snake, food):
+    border = 0
     head_pos = (snake.segments[0].x, snake.segments[0].y)
     tail_pos = (snake.segments[-1].x, snake.segments[-1].y)
     food_pos = (food.x, food.y)
+    if snake.x > 500 or snake.x < 0 or snake.y > 500 or snake.y < 0: # TODO magic numbers
+        border = 1
     tail_rel = tuple(subtract(tail_pos, head_pos))
     food_rel = tuple(subtract(food_pos, head_pos))
     return food_rel, tail_rel
@@ -35,9 +36,10 @@ def q_table_lookup(table, state):
 # If all state are 0 return random action
 def select_action(table, state):
     states = q_table_lookup(table, state)
+    if random.choice(range(0, 100))/100 < random_rate:
+        return random.choice(list(states.keys()))
     if all(value == 0 for value in states.values()):
         best = random.choice(list(states.keys()))
-        return best
     else:
         best = max(states.items(), key=operator.itemgetter(1))[0]
     return best

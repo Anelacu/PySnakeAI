@@ -55,6 +55,16 @@ class Snake:
         self.y += self.yVel
         self.segments.insert(0, Segment(self.x, self.y))
 
+    def snake_reset(self, length=5, size=500):
+        self.initial_length = length
+        self.length = length
+        self.segments = []
+        self.x, self.y = size // 2, size // 2
+        self.xVel, self.yVel = -10, 0
+        for i in range(length):
+            self.segments.append(Segment(self.x, self.y))
+            self.x += self.segments[i].width
+
 
 # Reworked game loop to remove unneeded functionality for AI
 # Reworked game loop to remove unneeded functionality for AI
@@ -91,16 +101,21 @@ class AiLoop:
                         on_snake = True
         # Check collision with borders
         elif snake.x > self.size or snake.x < 0 or snake.y > self.size or snake.y < 0:
-            self.reward = -1
+            self.reward = -1000
             self.border_collisions += 1
+            snake.x = abs(snake.x % self.size)
+            snake.y = abs(snake.y % self.size)
             return True
         # Check collision with self
         else:
-            for s in snake.segments[1:]:
+            for i, s in enumerate(snake.segments[1:]):
                 if s.x == snake.x and s.y == snake.y:
+                    segs = [(seg.x, seg.y) for seg in snake.segments]
+                    print(i, "with itself", len(snake.segments), segs)
                     self.reward = -1
                     self.self_collisions += 1
                     return True
+            self.reward = -0.1
 
     # Initialise the loop and create all needed objects
     def loop_init(self):

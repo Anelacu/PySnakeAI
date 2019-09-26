@@ -1,18 +1,65 @@
-from game import Food
-from game import Snake
+from random import choice
 from ai_functionality import *
+# Segment is a block of the Snake
+# The snake is constructed of these segments
+class Segment:
+    def __init__(self, x, y, width=10):
+        self.x, self.y = x, y
+        self.width = width
 
 
-# Reworked game loop to remove unneeded functionaility for AI
+# Food is the objective that snake is meant to reach
+# Food will cause the snake to grow and score to increase
+class Food:
+    def __init__(self, size, x=0, y=0, width=10):
+        self.x, self.y = x, y
+        self.width = width
+        self.size = size
+
+# Update coordinates after the food has been eaten
+    def food_new(self):
+        self.x = choice(range(10, self.size, self.width))
+        self.y = choice(range(10, self.size, self.width))
+
+
+# Snake class
+# Length controls starting number of segments
+# self.segments is used to store the segments of the snake
+# xVel and yVel are velocities used to determine snake movement
+# direction is a label of the current direction of the snake
+class Snake:
+    def __init__(self, length=5, size=500):
+        self.initial_length = length
+        self.length = length
+        self.segments = []
+        self.x, self.y = size//2, size//2
+        self.xVel, self.yVel = -10, 0
+        self.direction = 'LEFT'
+        for i in range(length):
+            self.segments.append(Segment(self.screen, self.x, self.y, self.colour))
+            self.x += self.segments[i].width
+
+# Function to move the snake
+# Tail is popped and new head is drawn
+    def snake_move(self):
+        self.x += self.xVel
+        self.y += self.yVel
+        self.segments.insert(0, Segment(self.screen, self.x, self.y, self.colour))
+        self.segments.pop()
+
+# Function to add a new segment to the snake
+# Draws a head in the place of the eaten food
+    def snake_grow(self):
+        self.x += self.xVel
+        self.y += self.yVel
+        self.segments.insert(0, Segment(self.screen, self.x, self.y, self.colour))
+
+
+# Reworked game loop to remove unneeded functionality for AI
 class AiLoop:
     def __init__(self):
-        self.colours = {"PURPLE": (255, 0, 255),
-                        "RED": (255, 0, 0),
-                        "BLACK": (0, 0, 0)}
         self.size = 500
-        self.screen = pygame.display.set_mode([self.size, self.size])
         self.reward = -0.1
-
 
     # check collisions and assign rewards based on collisions
     def check_collisions(self, snake, food):
@@ -39,16 +86,12 @@ class AiLoop:
                     reward = -1
                     return True
 
-
-    # Initialise the loop and craete all needed objects
+    # Initialise the loop and create all needed objects
     def loop_init(self):
-        pygame.init()
-        clock = pygame.time.Clock()
         food = Food(self.colours, self.screen, self.size)
         food.food_new()
         snake = Snake(self.colours["PURPLE"], self.screen)
-        self.game_loop(clock, food, snake)
-
+        self.game_loop(food, snake)
 
     def main_loop(self, clock, food, snake):
         while True:

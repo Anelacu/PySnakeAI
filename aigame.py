@@ -1,5 +1,7 @@
 from random import choice
 from ai_functionality import *
+
+
 # Segment is a block of the Snake
 # The snake is constructed of these segments
 class Segment:

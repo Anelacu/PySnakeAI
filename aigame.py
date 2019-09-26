@@ -59,7 +59,7 @@ class Snake:
 # Reworked game loop to remove unneeded functionality for AI
 # Reworked game loop to remove unneeded functionality for AI
 class AiLoop:
-    def __init__(self,iterations=1000):
+    def __init__(self, iterations=1000):
         self.size = 500
         self.reward = -0.1
         self.iterations = iterations
@@ -109,17 +109,16 @@ class AiLoop:
         snake = Snake(size=self.size)
         self.main_loop(food, snake)
 
-    def main_loop(self,food, snake):
-        i = 0
-        while i < iterations:
+    def main_loop(self, food, snake):
+        for i in range(iterations):
             # start loop
             # get state of loop
             # select action from q table
             # get reward
             # update state in q table
             # repeat
-            state = select_state(snake,food)
-            action = select_action(state,self.q_table)
+            state = select_state(snake, food)
+            action = select_action(self.q_table, state)
             if action == 'up':
                 snake.yVel -= 10
                 snake.xVel = 0
@@ -135,21 +134,19 @@ class AiLoop:
             snake.snake_move()
             self.check_collisions(snake, food)
             reward = self.reward
-            state_updated = select_state(snake,food)
-            q_table_update(self.q_table,state, state_updated, reward, action)
+            state_updated = select_state(snake, food)
+            q_table_update(self.q_table, state, state_updated, reward, action)
             self.check_collisions(snake, food)
-            i += 1
-            with open('log.txt','w') as log:
+            with open('log.txt', 'a') as log:
                 line0 = '---------------------------------------------------'
-                line1 = 'Iteration # {} q table : {}'.format(i,q_table)
+                line1 = 'Iteration # {} q table : {}'.format(i, self.q_table)
                 line2 = 'Collisions Stats:'
                 line3 = 'Self : {}'.format(self.self_collisions)
                 line4 = 'Food : {}'.format(self.food_collisions)
                 line5 = 'Borders: {}'.format(self.border_collisions)
                 line6 = '---------------------------------------------------'
                 log.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
-                                    line0,line1,line2,line3,line4,line5,line6))
-
+                                    line0, line1, line2, line3, line4, line5, line6))
 
 
 iterations = 1000

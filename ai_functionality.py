@@ -8,7 +8,6 @@ avail_actions = ['up', 'down', 'left', 'right']
 learning_rate = 0.85
 discount_factor = 0.9
 random_rate = 0.05
-iterations = 1000
 
 
 # Function which will return a tuple representing the state
@@ -24,7 +23,7 @@ def select_state(snake, food):
 
 # Function to return the state and its action values
 # If state does not exist add it and set action values to 0
-def q_table_lookup(table,state):
+def q_table_lookup(table, state):
     if state in table.keys():
         return table[state]
     else:
@@ -34,13 +33,13 @@ def q_table_lookup(table,state):
 
 # Function to select best action from a given state
 # If all state are 0 return random action
-def select_action(state,table):
-    state = q_table_lookup(table,state)
-    if all(value == 0 for value in state.values()):
-        best = random.choice(list(state))
+def select_action(table, state):
+    states = q_table_lookup(table, state)
+    if all(value == 0 for value in states.values()):
+        best = random.choice(list(states.keys()))
         return best
     else:
-        best = max(state.items(), key=operator.itemgetter(1))[0]
+        best = max(states.items(), key=operator.itemgetter(1))[0]
     return best
 
 
@@ -49,8 +48,8 @@ def select_action(state,table):
 # calculate learned value by adding reward to discount * predicted
 # subtract the old value
 # then update q table by old value + learning rate*new value
-def q_table_update(table,state0, state1, reward, action):
-    q0 = q_table_lookup(table,state0)
-    q1 = q_table_lookup(table,state1)
-    new_val = reward + discount_factor * select_action(table,q1) - q0[action]
+def q_table_update(table, state0, state1, reward, action):
+    q0 = q_table_lookup(table, state0)
+    q1 = q_table_lookup(table, state1)
+    new_val = reward + discount_factor * q1[select_action(table, state1)] - q0[action]
     table[state0][action] = q0[action] + learning_rate * new_val

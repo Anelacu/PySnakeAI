@@ -1,5 +1,6 @@
 from random import choice
 from ai_functionality import *
+import json
 
 
 # Segment is a block of the Snake
@@ -69,7 +70,7 @@ class Snake:
 # Reworked game loop to remove unneeded functionality for AI
 # Reworked game loop to remove unneeded functionality for AI
 class AiLoop:
-    def __init__(self, iterations=1000):
+    def __init__(self,q_table, iterations=1000):
         self.size = 500
         self.reward = -0.1
         self.iterations = iterations
@@ -78,10 +79,10 @@ class AiLoop:
         self.border_collisions = 0
         # Some variables that will be used for q learning
         # For now numbers are just approximations
-        self.q_table = {}
+        self.q_table = q_table
         self.avail_actions = ['up', 'down', 'left', 'right']
-        self.learning_rate = 0.85
-        self.discount_factor = 0.9
+        self.learning_rate = 0.5
+        self.discount_factor = 0.5
         self.random_rate = 0.05
 
     # check collisions and assign rewards based on collisions
@@ -101,7 +102,7 @@ class AiLoop:
                         on_snake = True
         # Check collision with borders
         elif snake.x > self.size or snake.x < 0 or snake.y > self.size or snake.y < 0:
-            self.reward = -1000
+            self.reward = -0.1
             self.border_collisions += 1
             snake.x = abs(snake.x % self.size)
             snake.y = abs(snake.y % self.size)
@@ -111,7 +112,7 @@ class AiLoop:
             for i, s in enumerate(snake.segments[1:]):
                 if s.x == snake.x and s.y == snake.y:
                     segs = [(seg.x, seg.y) for seg in snake.segments]
-                    print(i, "with itself", len(snake.segments), segs)
+                    #print(i, "with itself", len(snake.segments), segs)
                     self.reward = -1
                     self.self_collisions += 1
                     return True
@@ -125,7 +126,7 @@ class AiLoop:
         self.main_loop(food, snake)
 
     def main_loop(self, food, snake):
-        for i in range(iterations):
+        for i in range(self.iterations):
             # start loop
             # get state of loop
             # select action from q table
@@ -133,7 +134,7 @@ class AiLoop:
             # update state in q table
             # repeat
             state = select_state(snake, food)
-            action = select_action(self.q_table, state)
+            action = select_action(self.q_table, state, self.random_rate)
             if action == 'up':
                 snake.yVel -= 10
                 snake.xVel = 0
@@ -150,9 +151,11 @@ class AiLoop:
             self.check_collisions(snake, food)
             reward = self.reward
             state_updated = select_state(snake, food)
-            q_table_update(self.q_table, state, state_updated, reward, action)
+            q_table_update(self.q_table, state, state_updated, reward,
+                           action, self.learning_rate,
+                           self.discount_factor, self.random_rate)
             self.check_collisions(snake, food)
-            if i % 100 == 0:
+            if i % 10 == 0:
                 print('Percent loaded: {} %'.format(i*100//self.iterations))
                 with open('log.txt', 'a') as log:
                     line0 = '---------------------------------------------------'
@@ -163,9 +166,16 @@ class AiLoop:
                     line5 = 'Borders: {}'.format(self.border_collisions)
                     line6 = '---------------------------------------------------'
                     log.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
-                                        line0, line1, line2, line3, line4, line5, line6))
+                        line0, line1, line2,
+                        line3, line4, line5, line6))
+        with open('q_table.json', 'w') as fp:
+            json.dump(self.q_table, fp)
 
 
-iterations = 10000
-ai = AiLoop(iterations)
-ai.loop_init()
+with open('q_table.json') as f:
+    q_table = json.load(f)
+iterations = 100
+for i in range(iterations//10):
+    print('Loops done ' + str(i))
+    ai = AiLoop(q_table,iterations)
+    ai.loop_init()

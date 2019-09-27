@@ -81,16 +81,16 @@ class AiLoop:
         # For now numbers are just approximations
         self.q_table = q_table
         self.avail_actions = ['up', 'down', 'left', 'right']
-        self.learning_rate = 0.5
+        self.learning_rate = 0.15
         self.discount_factor = 0.5
-        self.random_rate = 0.05
+        self.random_rate = 0.1
 
     # check collisions and assign rewards based on collisions
     def check_collisions(self, snake, food):
         # Check collision with food
         if snake.x == food.x and snake.y == food.y:
             snake.snake_grow()
-            self.reward = 1
+            self.reward = 2
             self.food_collisions += 1
             on_snake = True
             while on_snake:
@@ -168,13 +168,13 @@ class AiLoop:
                     log.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
                         line0, line1, line2,
                         line3, line4, line5, line6))
-        with open('q_table.json', 'w') as fp:
-            json.dump(self.q_table, fp)
+        with open('q_table.json', 'w', encoding='utf-8') as f:
+            json.dump(self.q_table, f, ensure_ascii=False, indent=4)
 
 
 with open('q_table.json') as f:
     q_table = json.load(f)
-iterations = 100
+iterations = 10000
 for i in range(iterations//10):
     print('Loops done ' + str(i))
     ai = AiLoop(q_table,iterations)

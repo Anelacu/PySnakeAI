@@ -179,6 +179,7 @@ def run_iteration(iters):
         ai = AiLoop(q_table,iters*10)
         ai.loop_init()
 
+# save q table to json
 with open('q_table.json') as f:
     q_table = json.load(f)
 

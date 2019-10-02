@@ -1,6 +1,7 @@
 from random import choice
 from ai_functionality import *
 import json
+from multiprocessing import Process
 
 
 # Segment is a block of the Snake
@@ -156,7 +157,6 @@ class AiLoop:
                            self.discount_factor, self.random_rate)
             self.check_collisions(snake, food)
             if i % 10 == 0:
-                print('Percent loaded: {} %'.format(i*100//self.iterations))
                 with open('log.txt', 'a') as log:
                     line0 = '---------------------------------------------------'
                     line1 = 'Iteration # {} '.format(i)
@@ -172,10 +172,14 @@ class AiLoop:
             json.dump(self.q_table, f, ensure_ascii=False, indent=4)
 
 
+# Function used to run ai training
+def run_iteration(iters):
+    for i in range(iters):
+        print('Loops done ' + str(i))
+        ai = AiLoop(q_table,iters*10)
+        ai.loop_init()
+
 with open('q_table.json') as f:
     q_table = json.load(f)
-iterations = 10000
-for i in range(iterations//10):
-    print('Loops done ' + str(i))
-    ai = AiLoop(q_table,iterations)
-    ai.loop_init()
+
+run_iteration(100)

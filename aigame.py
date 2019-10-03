@@ -218,7 +218,7 @@ class AiLoop:
             self.check_collisions(snake, food)
             self.update_window(snake, food)
             old_distance = distance
-            self.clock.tick(10)
+            self.clock.tick(100)
 
             # Create a log file
             if i % 10 == 0:
@@ -243,7 +243,7 @@ class AiLoop:
 def run_iteration(iters):
     for i in range(iters):
         print('Loops done ' + str(i))
-        ai = AiLoop(q_table, screen, clock, iters*10)
+        ai = AiLoop(q_table, screen, clock, iters)
         ai.loop_init()
 
 
@@ -251,4 +251,4 @@ def run_iteration(iters):
 with open('q_table.json') as f:
     q_table = json.load(f)
 
-run_iteration(100)
+run_iteration(1)

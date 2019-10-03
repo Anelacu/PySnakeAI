@@ -3,6 +3,7 @@ from ai_functionality import *
 import json
 import pygame
 import sys
+import math
 
 PURPLE = (255, 0, 255)
 RED = (255, 0, 0)
@@ -16,8 +17,10 @@ pygame.init()
 
 # Segment is a block of the Snake
 # The snake is constructed of these segments
+
+
 class Segment:
-    def __init__(self, x, y, width=10,colour=PURPLE):
+    def __init__(self, x, y, width=10, colour=PURPLE):
         self.x, self.y = x, y
         self.width = width
         self.colour = colour
@@ -25,6 +28,7 @@ class Segment:
 
 # Draw the segment at the specified coordinates
 # Segments are squares with dimensions of width*width
+
     def segment_draw(self):
         pygame.draw.rect(screen, self.colour, (self.x, self.y, self.width,
                                                self.width), 0)
@@ -33,7 +37,7 @@ class Segment:
 # Food is the objective that snake is meant to reach
 # Food will cause the snake to grow and score to increase
 class Food:
-    def __init__(self,colour=RED,x=0, y=0, width=10,size=500):
+    def __init__(self, colour=RED, x=0, y=0, width=10, size=500):
         self.x, self.y = x, y
         self.width = width
         self.size = size
@@ -47,7 +51,7 @@ class Food:
 
 # Draw the food at the specified coordinates
 # Food is a square of width*width dimension
-    def food_draw(self,screen):
+    def food_draw(self, screen):
         pygame.draw.rect(screen, self.colour, (self.x, self.y,
                                                self.width, self.width), 0)
 
@@ -94,8 +98,8 @@ class Snake:
             self.segments.append(Segment(self.x, self.y))
             self.x += self.segments[i].width
 
-
     # Function to create the snake
+
     def snake_draw(self):
         for i in range(len(self.segments)):
             self.segments[i].segment_draw()
@@ -104,7 +108,7 @@ class Snake:
 
 # Reworked game loop to remove unneeded functionality for AI
 class AiLoop:
-    def __init__(self,q_table,screen,clock,iterations=1000):
+    def __init__(self, q_table, screen, clock, visuals=False, iterations=1000):
         self.size = 500
         self.reward = -0.1
         self.iterations = iterations
@@ -117,16 +121,16 @@ class AiLoop:
         # For now numbers are just approximations
         self.q_table = q_table
         self.avail_actions = ['up', 'down', 'left', 'right']
-        self.learning_rate = 0.3
+        self.learning_rate = 0.1
         self.discount_factor = 0.1
-        self.random_rate = 0.5
+        self.random_rate = 0.1
 
     # check collisions and assign rewards based on collisions
     def check_collisions(self, snake, food):
         # Check collision with food
         if snake.x == food.x and snake.y == food.y:
             snake.snake_grow()
-            self.reward = 2
+            self.reward = 1
             self.food_collisions += 1
             on_snake = True
             while on_snake:
@@ -148,7 +152,6 @@ class AiLoop:
             for i, s in enumerate(snake.segments[1:]):
                 if s.x == snake.x and s.y == snake.y:
                     segs = [(seg.x, seg.y) for seg in snake.segments]
-                    #print(i, "with itself", len(snake.segments), segs)
                     self.reward = -1
                     self.self_collisions += 1
                     return True
@@ -156,21 +159,20 @@ class AiLoop:
 
     # Initialise the loop and create all needed objects
     def loop_init(self):
-        food = Food(self.size,self.screen)
+        food = Food(self.size, self.screen)
         food.food_new()
         snake = Snake(size=self.size)
         self.main_loop(food, snake)
 
-
     # Utility function to redraw the window
-    def update_window(self,snake, food):
+    def update_window(self, snake, food):
         self.screen.fill(BLACK)
         food.food_draw(self.screen)
         snake.snake_draw()
         pygame.display.update()
 
-
     def main_loop(self, food, snake):
+        old_distance = 0
         for i in range(self.iterations):
             # start loop
             # get state of loop
@@ -178,18 +180,23 @@ class AiLoop:
             # get reward
             # update state in q table
             # repeat
+            head_pos = (snake.segments[0].x, snake.segments[0].y)
+            food_pos = (food.x, food.y)
+            distance = math.sqrt(sum([(a - b) ** 2 for a, b in zip(
+                head_pos, food_pos)]))
+
             state = select_state(snake, food)
             action = select_action(self.q_table, state, self.random_rate)
-            if action == 'up':
+            if action == 'up' and snake.yVel != 10:
                 snake.yVel = -10
                 snake.xVel = 0
-            elif action == 'down':
+            elif action == 'down'and snake.yVel != -10:
                 snake.yVel = 10
                 snake.xVel = 0
-            elif action == 'right':
+            elif action == 'right' and snake.xVel != -10:
                 snake.xVel = 10
                 snake.yVel = 0
-            elif action == 'left':
+            elif action == 'left' and snake.yVel != 10:
                 snake.xVel = -10
                 snake.yVel = 0
             # If manual stop of algorithm is required
@@ -202,24 +209,27 @@ class AiLoop:
             snake.snake_move()
             self.check_collisions(snake, food)
             reward = self.reward
+            if distance < old_distance:
+                self.reward += 0.1
             state_updated = select_state(snake, food)
             q_table_update(self.q_table, state, state_updated, reward,
                            action, self.learning_rate,
                            self.discount_factor, self.random_rate)
             self.check_collisions(snake, food)
             self.update_window(snake, food)
+            old_distance = distance
             self.clock.tick(10)
 
             # Create a log file
             if i % 10 == 0:
                 with open('log.txt', 'a') as log:
-                    line0 = '---------------------------------------------------'
+                    line0 = '-------------------------------------------------'
                     line1 = 'Iteration # {} '.format(i)
                     line2 = 'Collisions Stats:'
                     line3 = 'Self : {}'.format(self.self_collisions)
                     line4 = 'Food : {}'.format(self.food_collisions)
                     line5 = 'Borders: {}'.format(self.border_collisions)
-                    line6 = '---------------------------------------------------'
+                    line6 = '-------------------------------------------------'
                     log.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
                         line0, line1, line2,
                         line3, line4, line5, line6))
@@ -233,8 +243,9 @@ class AiLoop:
 def run_iteration(iters):
     for i in range(iters):
         print('Loops done ' + str(i))
-        ai = AiLoop(q_table,screen,clock,iters*10)
+        ai = AiLoop(q_table, screen, clock, iters*10)
         ai.loop_init()
+
 
 # save q table to json
 with open('q_table.json') as f:

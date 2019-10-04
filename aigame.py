@@ -251,4 +251,4 @@ def run_iteration(iters):
 with open('q_table.json') as f:
     q_table = json.load(f)
 
-run_iteration(1)
+run_iteration(100)

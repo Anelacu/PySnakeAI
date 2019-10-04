@@ -3,9 +3,7 @@ import operator
 import random
 # Some variables that will be used for q learning
 # For now numbers are just approximations
-learning_rate = 0.5
-discount_factor = 0.9
-random_rate = 0.05
+
 
 
 # Function which will return a tuple representing the state
@@ -19,7 +17,8 @@ def select_state(snake, food):
         border = 1
     tail_rel = tuple(subtract(tail_pos, head_pos))
     food_rel = tuple(subtract(food_pos, head_pos))
-    return food_rel, tail_rel
+    state = (food_rel,tail_rel)
+    return str(state)
 
 
 # Function to return the state and its action values
@@ -34,9 +33,9 @@ def q_table_lookup(table, state):
 
 # Function to select best action from a given state
 # If all state are 0 return random action
-def select_action(table, state):
+def select_action(table, state,rr):
     states = q_table_lookup(table, state)
-    if random.choice(range(0, 100))/100 < random_rate:
+    if random.choice(range(0, 100))/100 < rr:
         return random.choice(list(states.keys()))
     if all(value == 0 for value in states.values()):
         best = random.choice(list(states.keys()))
@@ -50,8 +49,8 @@ def select_action(table, state):
 # calculate learned value by adding reward to discount * predicted
 # subtract the old value
 # then update q table by old value + learning rate*new value
-def q_table_update(table, state0, state1, reward, action):
+def q_table_update(table, state0, state1, reward, action,lr,df,rr):
     q0 = q_table_lookup(table, state0)
     q1 = q_table_lookup(table, state1)
-    new_val = reward + discount_factor * q1[select_action(table, state1)] - q0[action]
-    table[state0][action] = q0[action] + learning_rate * new_val
+    new_val = reward + df * q1[select_action(table, state1,rr)] - q0[action]
+    table[state0][action] = q0[action] + lr * new_val

@@ -13,12 +13,15 @@ import numpy as np
 # Create some sort of logging system
 # Create way to save weights (possibly h5)
 # Possibly create a way to load saved weights into network
-class agent():
+# Proposed state layout :
+# direction of snake (4) if food is below,above,etc (4)
+# danger up,down,straight (3) -> all toegther 11 input nodes
+ class agent():
     def __init__(self):
         self.reward = 0
         self.gamma = 0
         self.epsilon = 0
-        self.lambda = 0.005
+        self.learning_rate = 0.005
         self.target = 1
         self.prediction = 0
         self.mem = []
@@ -28,10 +31,13 @@ class agent():
         self.model = self.network()
 
 
-    def get_state():
+    def get_danger(self,snake):
         pass
-        # need to write func to get state and decide on new
-        # state structure
+        # function that will be used to calc danger state
+        # if this form of state sctructure is choseb
+
+    def get_state(self,snake,food):
+        pass
 
 
     # Function that will be used to assign reward to agent
@@ -48,7 +54,7 @@ class agent():
     # ---ToDo--- ---> when state is decided change input dims
     def network(self):
         model = Sequential()
-        model.add(Dense(output_dim=120,activation='relu',input_dim=1))
+        model.add(Dense(output_dim=120,activation='relu',input_dim=11))
         model.add(Dropout(0.15))
         model.add(Dense(output_dim=120,activation='relu'))
         model.add(Dropout(0.15))

@@ -34,14 +34,29 @@ class agent():
         # state structure
 
 
-    def get_reward():
-        pass
-        # need to write function to reward agent
+    # Function that will be used to assign reward to agent
+    # Reward is normalised to be in range of [-1,1]
+    def get_reward(self,snake):
+        self.reward = snake.reward
+        if self.reward >= 1:
+            self.reward = 1
+        elif self.reward <= -1:
+            self.reward = -1
 
-
-    def network():
-        pass
-        # need to write function to create actual network
+    # The neural network that will control the agent
+    # Consists of dense layers of 120 neurons each and dropout layers
+    # ---ToDo--- ---> when state is decided change input dims
+    def network(self):
+        model = Sequential()
+        model.add(Dense(output_dim=120,activation='relu',input_dim=1))
+        model.add(Dropout(0.15))
+        model.add(Dense(output_dim=120,activation='relu'))
+        model.add(Dropout(0.15))
+        model.add(Dense(output_dim=120,activation='relu'))
+        model.add(Dropout(0.15))
+        model.add(Dense(output_dim=120,activation='softmax'))
+        opt = Adam(self.learning_rate)
+        model.compile(loss='mse',optimizer=opt)
 
 
     def write_memory():
@@ -51,7 +66,7 @@ class agent():
 
     def replay():
         pass
-        # function to replay the games using agent memory
+        # function to replay the games using agent memor
 
 
     def train_short():

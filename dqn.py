@@ -12,7 +12,7 @@ import numpy as np
 # Create some sort of logging system
 # Create way to save weights (possibly h5)
 # Possibly create a way to load saved weights into network
-class agent():
+class Agent():
     def __init__(self):
         self.reward = 0
         self.gamma = 0
@@ -79,12 +79,14 @@ class agent():
 
     # Function that will be used to assign reward to agent
     # Reward is normalised to be in range of [-1,1]
-    def get_reward(self, snake):
-        self.reward = snake.reward
-        if self.reward >= 1:
-            self.reward = 1
-        elif self.reward <= -1:
+    def get_reward(self,foodCollide, over):
+        self.reward = 0
+        if over:
             self.reward = -1
+        elif foodCollide:
+            self.reward = 1
+        return self.reward
+
 
     # The neural network that will control the agent
     # Consists of dense layers of 120 neurons each and dropout layers
@@ -113,9 +115,9 @@ class agent():
             if not over:
                 target = reward + self.gamma * np.amax(self.model.predict(
                                                        np.array([next_state]))[0])
-            targetModel = self.model.predict(np.array([state])
-            targetModel[0][np.argmax(action)] = target
-            self.model.fit(np.array([state]), targetModel, epochs=1, verbose=0)
+            targetf = self.model.predict(np.array([state]))
+            targetf[0][np.argmax(action)] = target
+            self.model.fit(np.array([state]), targetf, epochs=1, verbose=0)
 
 
 

@@ -100,24 +100,30 @@ class agent():
         opt = Adam(self.learning_rate)
         model.compile(loss='mse', optimizer=opt)
 
-    def write_memory(self, state, action, reward, next_state):
-        self.memory.append((state, action, reward, next_state))
+    def write_memory(self, state, action, reward, next_state,over):
+        self.memory.append((state, action, reward, next_state,over))
 
     def replay(self, memory):
-        for state, action, reward, next_state in memory:
+        if len(memory) > 1000:
+            batch = random.sample(memory, 1000)
+        else:
+            batch = memory
+        for state, action, reward, next_state,over in batch:
             target = reward
-            target = reward + self.gamma * np.amax(self.model.predict(
-                                                   np.array([next_state]))[0])
+            if not over:
+                target = reward + self.gamma * np.amax(self.model.predict(
+                                                       np.array([next_state]))[0])
             targetModel = self.model.predict(np.array([state])
             targetModel[0][np.argmax(action)] = target
             self.model.fit(np.array([state]), targetModel, epochs=1, verbose=0)
 
 
 
-    def train_short():
-        target=reward
-        target=reward + self.gamma * np.amax(self.model.predict(
-                                             next_state.reshape((1, 11)))[0])
-        targetModel=self.model.predict(state.reshape((1, 11)))
+    def train_short(self, state, action, reward, next_state, over):
+        target = reward
+        if not over:
+            target = reward + self.gamma * np.amax(self.model.predict(
+                                                 next_state.reshape((1, 11)))[0])
+        targetModel = self.model.predict(state.reshape((1, 11)))
         targetModel[0][np.argmax(action)] = target
         self.model.fit(state.reshape((1, 11)), targetModel, epochs=1, verbose=0)

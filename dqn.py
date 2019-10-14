@@ -31,13 +31,54 @@ import numpy as np
         self.model = self.network()
 
 
-    def get_danger(self,snake):
-        pass
-        # function that will be used to calc danger state
-        # if this form of state sctructure is choseb
-
+# function used to get the current state of the agent
     def get_state(self,snake,food):
-        pass
+        aheadDanger = False
+        leftDanger = False
+        rightDanger = False
+        # First get current positions
+        curHeadx = snake.segments[0].x
+        curHeady = snake.segments[0].y
+        curFood = (food.x, food.y)
+        # Calculate changes in needed directions
+        aheadx = curHeadx + snake.xVel
+        aheady = curHeady + snake.yVel
+        side1x = curHeadx + snake.yVel
+        side1y = curHeadx + snake.xVel
+        side2x = curHeadx - snake.yVel
+        side2y = curHeadx - snake.xVel
+        # Check if there will be collisions on self
+        for seg in snake.segments[1:]:
+            if aheadx == seg.x and aheady == seg.y:
+                aheadDanger = True
+            elif side1x == seg.x and side1y == seg.y:
+                rightDanger = True
+            elif side2x == seg.x and side2y == seg.y:
+                leftDanger = True
+
+        # Determine current snake direction
+        snakeUp = (snake.yVel == -10)
+        snakeDown = (snake.yVel == 10)
+        snakeLeft = (snake.xVel == -10)
+        snakeRight = (snake.xVel == 10)
+        # Determine relative position of food
+        foodUp = (food.y < snake.y)
+        foodDown = (food.y > snake.y)
+        foodLeft = (food.x < snake.x)
+        foodRight = (food.x > snake.x)
+
+        state = [aheadDanger,leftDanger,rightDanger,
+                 snakeUp,snakeDown,snakeLeft,snakeRight,
+                 foodDown,foodUp,foodLeft,foodRight]
+
+        # Normalise data to 0 or 1         
+        for i in range(len(state)):
+            if state[i]:
+                state[i] = 1
+            else:
+                state[i] = 0
+
+        return np.assarray(state)
 
 
     # Function that will be used to assign reward to agent

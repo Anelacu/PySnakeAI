@@ -7,16 +7,12 @@ import numpy as np
 
 
 # ----- ToDo list ---------
-# Need to fill out the function skeleton below
 # Connect this to game
 # Test
 # Create some sort of logging system
 # Create way to save weights (possibly h5)
 # Possibly create a way to load saved weights into network
-# Proposed state layout :
-# direction of snake (4) if food is below,above,etc (4)
-# danger up,down,straight (3) -> all toegther 11 input nodes
- class agent():
+class agent():
     def __init__(self):
         self.reward = 0
         self.gamma = 0
@@ -32,7 +28,8 @@ import numpy as np
 
 
 # function used to get the current state of the agent
-    def get_state(self,snake,food):
+
+    def get_state(self, snake, food):
         aheadDanger = False
         leftDanger = False
         rightDanger = False
@@ -67,11 +64,11 @@ import numpy as np
         foodLeft = (food.x < snake.x)
         foodRight = (food.x > snake.x)
 
-        state = [aheadDanger,leftDanger,rightDanger,
-                 snakeUp,snakeDown,snakeLeft,snakeRight,
-                 foodDown,foodUp,foodLeft,foodRight]
+        state = [aheadDanger, leftDanger, rightDanger,
+                 snakeUp, snakeDown, snakeLeft, snakeRight,
+                 foodDown, foodUp, foodLeft, foodRight]
 
-        # Normalise data to 0 or 1         
+        # Normalise data to 0 or 1
         for i in range(len(state)):
             if state[i]:
                 state[i] = 1
@@ -80,10 +77,9 @@ import numpy as np
 
         return np.assarray(state)
 
-
     # Function that will be used to assign reward to agent
     # Reward is normalised to be in range of [-1,1]
-    def get_reward(self,snake):
+    def get_reward(self, snake):
         self.reward = snake.reward
         if self.reward >= 1:
             self.reward = 1
@@ -92,30 +88,36 @@ import numpy as np
 
     # The neural network that will control the agent
     # Consists of dense layers of 120 neurons each and dropout layers
-    # ---ToDo--- ---> when state is decided change input dims
     def network(self):
         model = Sequential()
-        model.add(Dense(output_dim=120,activation='relu',input_dim=11))
+        model.add(Dense(output_dim=120, activation='relu', input_dim=11))
         model.add(Dropout(0.15))
-        model.add(Dense(output_dim=120,activation='relu'))
+        model.add(Dense(output_dim=120, activation='relu'))
         model.add(Dropout(0.15))
-        model.add(Dense(output_dim=120,activation='relu'))
+        model.add(Dense(output_dim=120, activation='relu'))
         model.add(Dropout(0.15))
-        model.add(Dense(output_dim=120,activation='softmax'))
+        model.add(Dense(output_dim=120, activation='softmax'))
         opt = Adam(self.learning_rate)
-        model.compile(loss='mse',optimizer=opt)
+        model.compile(loss='mse', optimizer=opt)
 
+    def write_memory(self, state, action, reward, next_state):
+        self.memory.append((state, action, reward, next_state))
 
-    def write_memory():
-        pass
-        # need to write function to write to memory of agent
+    def replay(self, memory):
+        for state, action, reward, next_state in memory:
+            target = reward
+            target = reward + self.gamma * np.amax(self.model.predict(
+                                                   np.array([next_state]))[0])
+            targetModel = self.model.predict(np.array([state])
+            targetModel[0][np.argmax(action)] = target
+            self.model.fit(np.array([state]), targetModel, epochs=1, verbose=0)
 
-
-    def replay():
-        pass
-        # function to replay the games using agent memor
 
 
     def train_short():
-        pass
-        # function to train the short memory
+        target=reward
+        target=reward + self.gamma * np.amax(self.model.predict(
+                                             next_state.reshape((1, 11)))[0])
+        targetModel=self.model.predict(state.reshape((1, 11)))
+        targetModel[0][np.argmax(action)] = target
+        self.model.fit(state.reshape((1, 11)), targetModel, epochs=1, verbose=0)

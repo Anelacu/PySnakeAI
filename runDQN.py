@@ -64,25 +64,24 @@ class GameLoop:
             while not self.over:
                 agent.epsilon = 100 - numGames
                 oldState = agent.get_state(snake,food)
-                print(oldState)
                 if randint(0,200) < agent.epsilon:
-                    move = to_categorical(randint(0,2),num_classes=3)
+                    move = to_categorical(randint(0,2),num_classes=3,dtype='int32')
                 else:
                     predict = agent.model.predict(oldState.reshape(1,11))
-                    print('----------------')
-                    print(predict)
-                    print('----------------')
-                    move = to_categorical(np.argmax(predict[0]), num_classes=3)
+                    move = to_categorical(np.argmax(predict[0]), num_classes=3,dtype='int32')
+                    print(move)
                 if np.array_equal(move ,[1, 0, 0]):
                     snake.xVel = 10
                 elif np.array_equal(move,[0, 1, 0]) and snake.yVel == 0:  # right - going horizontal
                     snake.yVel = 10
                 elif np.array_equal(move,[0, 1, 0]) and snake.xVel == 0:  # right - going vertical
-                    snake.yVel = -10
+                    snake.xVel = 10
                 elif np.array_equal(move, [0, 0, 1]) and snake.yVel == 0:  # left - going horizontal
-                    snake.xVel = -10
+                    snake.yVel = -10
                 elif np.array_equal(move,[0, 0, 1]) and snake.xVel == 0:  # left - going vertical
-                    snake.yVel = 10
+                    snake.yVel = -10
+                snake.snake_move()
+                self.check_collisions(snake,food)
                 self.update_window(snake,food)
                 self.clock.tick(10)
                 newState = agent.get_state(snake,food)

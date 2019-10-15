@@ -57,35 +57,39 @@ class GameLoop:
         agent = Agent()
         numGames = 0
         top = 0
-        while numGames < 200:
+        while numGames < 100:
             food = Food(self.size, self.screen)
             food.food_new()
             snake = Snake(size=self.size)
             while not self.over:
                 agent.epsilon = 100 - numGames
                 oldState = agent.get_state(snake,food)
+                print(oldState)
                 if randint(0,200) < agent.epsilon:
                     move = to_categorical(randint(0,2),num_classes=3)
                 else:
-                    predict = agent.model.predict(state_old.reshape(1,11))
+                    predict = agent.model.predict(oldState.reshape(1,11))
+                    print('----------------')
+                    print(predict)
+                    print('----------------')
                     move = to_categorical(np.argmax(predict[0]), num_classes=3)
                 if np.array_equal(move ,[1, 0, 0]):
-                    self.xVel = 10
-                elif np.array_equal(move,[0, 1, 0]) and self.y_change == 0:  # right - going horizontal
-                    self.yVel = 10
-                elif np.array_equal(move,[0, 1, 0]) and self.x_change == 0:  # right - going vertical
-                    self.yVel = -10
-                elif np.array_equal(move, [0, 0, 1]) and self.y_change == 0:  # left - going horizontal
-                    self.xVel = -10
-                elif np.array_equal(move,[0, 0, 1]) and self.x_change == 0:  # left - going vertical
-                    self.yVel = 10
-                update_window(food,snake)
+                    snake.xVel = 10
+                elif np.array_equal(move,[0, 1, 0]) and snake.yVel == 0:  # right - going horizontal
+                    snake.yVel = 10
+                elif np.array_equal(move,[0, 1, 0]) and snake.xVel == 0:  # right - going vertical
+                    snake.yVel = -10
+                elif np.array_equal(move, [0, 0, 1]) and snake.yVel == 0:  # left - going horizontal
+                    snake.xVel = -10
+                elif np.array_equal(move,[0, 0, 1]) and snake.xVel == 0:  # left - going vertical
+                    snake.yVel = 10
+                self.update_window(snake,food)
                 self.clock.tick(10)
                 newState = agent.get_state(snake,food)
                 reward = agent.get_reward(self.foodCollide,self.over)
                 agent.train_short(oldState,move,reward,newState,self.over)
                 agent.write_memory(oldState,move,reward,newState,self.over)
-            agent.replay(agent.memory)
+            agent.replay(agent.mem)
             numGames += 1
             print(numGames)
 

@@ -19,7 +19,7 @@ class Agent():
         self.epsilon = 0
         self.learning_rate = 0.005
         self.target = 1
-        self.prediction = 0
+        self.predict = 0
         self.mem = []
         self.actual = []
         self.memShort = np.array([])
@@ -75,7 +75,7 @@ class Agent():
             else:
                 state[i] = 0
 
-        return np.assarray(state)
+        return np.asarray(state)
 
     # Function that will be used to assign reward to agent
     # Reward is normalised to be in range of [-1,1]
@@ -98,12 +98,13 @@ class Agent():
         model.add(Dropout(0.15))
         model.add(Dense(output_dim=120, activation='relu'))
         model.add(Dropout(0.15))
-        model.add(Dense(output_dim=120, activation='softmax'))
+        model.add(Dense(output_dim=3, activation='softmax'))
         opt = Adam(self.learning_rate)
         model.compile(loss='mse', optimizer=opt)
+        return model
 
     def write_memory(self, state, action, reward, next_state,over):
-        self.memory.append((state, action, reward, next_state,over))
+        self.mem.append((state, action, reward, next_state,over))
 
     def replay(self, memory):
         if len(memory) > 1000:

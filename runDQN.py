@@ -69,17 +69,21 @@ class GameLoop:
                 else:
                     predict = agent.model.predict(oldState.reshape(1,11))
                     move = to_categorical(np.argmax(predict[0]), num_classes=3,dtype='int32')
-                    print(move)
                 if np.array_equal(move ,[1, 0, 0]):
                     snake.xVel = 10
+                    print('condition1')
                 elif np.array_equal(move,[0, 1, 0]) and snake.yVel == 0:  # right - going horizontal
                     snake.yVel = 10
+                    print('condition2')
                 elif np.array_equal(move,[0, 1, 0]) and snake.xVel == 0:  # right - going vertical
                     snake.xVel = 10
+                    print('condition3')
                 elif np.array_equal(move, [0, 0, 1]) and snake.yVel == 0:  # left - going horizontal
                     snake.yVel = -10
+                    print('condition4')
                 elif np.array_equal(move,[0, 0, 1]) and snake.xVel == 0:  # left - going vertical
-                    snake.yVel = -10
+                    snake.xVel = -10
+                    print('condition5')
                 snake.snake_move()
                 self.check_collisions(snake,food)
                 self.update_window(snake,food)
